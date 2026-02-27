@@ -1,4 +1,4 @@
-CUTLASS_DIR=../../cutlass
+CUTLASS_DIR=../cutlass
 REPO_DIR=.
 CXX=nvcc
 APP1=main
