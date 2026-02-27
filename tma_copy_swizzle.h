@@ -55,7 +55,12 @@ int copy_host_tma_swizzle_load_and_store_kernel(int M, int N,
   auto smemLayout = composition(TmaSwizzle{}, smemBaseLayout);
 
   auto tma_load = make_tma_copy(SM90_TMA_LOAD{}, tensor_S, smemLayout);
+  printf("[TMA mode] swizzle load descriptor\n");
+  print(tma_load);
+
   auto tma_store = make_tma_copy(SM90_TMA_STORE{}, tensor_D, smemLayout);
+  printf("[TMA mode] swizzle store descriptor\n");
+  print(tma_store);
 
   Params params(tma_load, tma_store, gmemLayoutS, smemLayout, tileShape);
 
