@@ -1,1 +1,4 @@
 ptx_dump/
+*.out
+*.exe
+*.o
