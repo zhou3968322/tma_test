@@ -2,7 +2,7 @@
 
 #include "tma_copy.h"
 
-template <int TILE_M = 128, int TILE_N = 128, int THREADS = 32>
+template <int TILE_M = 128, int TILE_N = 32, int THREADS = 32>
 int copy_host_tma_swizzle_load_and_store_kernel(int M, int N,
                                                 int iterations = 1) {
   using namespace cute;
@@ -37,8 +37,22 @@ int copy_host_tma_swizzle_load_and_store_kernel(int M, int N,
   auto tileShape = make_shape(bM{}, bN{});
 
   // Reuse tma_copy.h kernel/params path, only switch SMEM layout to swizzle mode.
+  // CUTLASS 4.2.1 TMA swizzle constraints require base exponent M in [4, 6].
+  constexpr int kSwizzleB = 3;
+  constexpr int kSwizzleM = 4;
+  constexpr int kSwizzleS = 3;
+  static_assert(4 <= kSwizzleM && kSwizzleM <= 6,
+                "CUTLASS 4.2.1 expects TMA swizzle base exponent M in [4, 6].");
+  using TmaSwizzle = Swizzle<kSwizzleB, kSwizzleM, kSwizzleS>;
+
+  // CUTLASS 4.2.1 runtime descriptor checks are sensitive to tile bytes on the
+  // contiguous axis when swizzle is enabled. Keep TILE_N defaulted to 32 for
+  // float so each row is 128B and descriptor initialization succeeds.
+  static_assert(TILE_N * int(sizeof(Element)) == 128,
+                "For CUTLASS 4.2.1 TMA swizzle path, default TILE_N should map to 128B rows.");
+
   auto smemBaseLayout = make_layout(tileShape, LayoutRight{});
-  auto smemLayout = composition(Swizzle<2, 3, 3>{}, smemBaseLayout);
+  auto smemLayout = composition(TmaSwizzle{}, smemBaseLayout);
 
   auto tma_load = make_tma_copy(SM90_TMA_LOAD{}, tensor_S, smemLayout);
   auto tma_store = make_tma_copy(SM90_TMA_STORE{}, tensor_D, smemLayout);
