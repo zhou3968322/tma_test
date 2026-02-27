@@ -5,7 +5,7 @@
 #include <cuda/atomic>
 #include <cuda/barrier>
 #include <cuda/ptx>
-#include <cuda/runtime_api.h>
+#include <cuda_runtime_api.h>
 #include <cudaTypedefs.h>
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
